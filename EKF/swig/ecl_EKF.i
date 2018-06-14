@@ -118,7 +118,7 @@
         float delta_vel_z;	// delta velocity in body frame (integrated accelerometer measurements)
         float delta_ang_dt;	// delta angle integration period in seconds
         float delta_vel_dt;	// delta velocity integration period in seconds
-        uint64_t time_us;	// timestamp in microseconds
+        int64_t time_us;	// timestamp in microseconds
         std::string __repr__() {
             std::stringstream ss;
             ss << "[delta_ang_x: " << delta_ang_x << "\n";
@@ -154,7 +154,7 @@
 %include <EKF/ekf.h>
 
 %extend Ekf {
-    void set_imu_data(uint64_t time_usec, uint64_t delta_ang_dt, uint64_t delta_vel_dt,  float delta_ang[3], float delta_vel[3]) {
+    void set_imu_data(int64_t time_usec, int64_t delta_ang_dt, int64_t delta_vel_dt,  float delta_ang[3], float delta_vel[3]) {
         for (int i = 0; i < 3; ++i) {
             last_imu_delta_ang[i] = delta_ang[i];
             last_imu_delta_vel[i] = delta_vel[i];
@@ -162,14 +162,14 @@
         self->setIMUData(time_usec, delta_ang_dt, delta_vel_dt,  last_imu_delta_ang, last_imu_delta_vel);
     }
 
-    void set_mag_data(uint64_t time_usec, float mag_data[3]) {
+    void set_mag_data(int64_t time_usec, float mag_data[3]) {
         for (int i = 0; i < 3; ++i) {
             last_mag_data[i] = mag_data[i];
         }
         self->setMagData(time_usec, last_mag_data);
     }
 
-    void set_baro_data(uint64_t time_usec, float baro_data) {
+    void set_baro_data(int64_t time_usec, float baro_data) {
         self->setBaroData(time_usec, baro_data);
     }
 

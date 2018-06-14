@@ -105,8 +105,8 @@ int main(int argc, char *argv[])
 	std::uniform_int_distribution<int> distribution(-200, 200);
 
 	int imu_sample_period = 2500;
-	uint64_t timer = 2000;		// simulation start time
-	uint64_t timer_last = timer;
+	int64_t timer = 2000;		// simulation start time
+	int64_t timer_last = timer;
 
 	float airspeed = 0.0f;
 

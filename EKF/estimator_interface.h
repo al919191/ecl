@@ -55,7 +55,7 @@ public:
 	EstimatorInterface() = default;
 	virtual ~EstimatorInterface() = default;
 
-	virtual bool init(uint64_t timestamp) = 0;
+	virtual bool init(int64_t timestamp) = 0;
 	virtual bool update() = 0;
 
 	// gets the innovations of velocity and position measurements
@@ -141,7 +141,7 @@ public:
 
 	// get the ekf WGS-84 origin position and height and the system time it was last set
 	// return true if the origin is valid
-	virtual bool get_ekf_origin(uint64_t *origin_time, map_projection_reference_s *origin_pos, float *origin_alt) = 0;
+	virtual bool get_ekf_origin(int64_t *origin_time, map_projection_reference_s *origin_pos, float *origin_alt) = 0;
 
 	// get the 1-sigma horizontal and vertical position uncertainty of the ekf WGS-84 position
 	virtual void get_ekf_gpos_accuracy(float *ekf_eph, float *ekf_epv) = 0;
@@ -156,37 +156,37 @@ public:
 	virtual void get_ekf_ctrl_limits(float *vxy_max, float *vz_max, float *hagl_min, float *hagl_max) = 0;
 
 	// ask estimator for sensor data collection decision and do any preprocessing if required, returns true if not defined
-	virtual bool collect_gps(uint64_t time_usec, struct gps_message *gps) { return true; }
+	virtual bool collect_gps(int64_t time_usec, struct gps_message *gps) { return true; }
 
 	// accumulate and downsample IMU data to the EKF prediction rate
 	virtual bool collect_imu(imuSample &imu) { return true; }
 
 	// set delta angle imu data
-	void setIMUData(uint64_t time_usec, uint64_t delta_ang_dt, uint64_t delta_vel_dt, float (&delta_ang)[3], float (&delta_vel)[3]);
+	void setIMUData(int64_t time_usec, int64_t delta_ang_dt, int64_t delta_vel_dt, float (&delta_ang)[3], float (&delta_vel)[3]);
 
 	// set magnetometer data
-	void setMagData(uint64_t time_usec, float (&data)[3]);
+	void setMagData(int64_t time_usec, float (&data)[3]);
 
 	// set gps data
-	void setGpsData(uint64_t time_usec, struct gps_message *gps);
+	void setGpsData(int64_t time_usec, struct gps_message *gps);
 
 	// set baro data
-	void setBaroData(uint64_t time_usec, float data);
+	void setBaroData(int64_t time_usec, float data);
 
 	// set airspeed data
-	void setAirspeedData(uint64_t time_usec, float true_airspeed, float eas2tas);
+	void setAirspeedData(int64_t time_usec, float true_airspeed, float eas2tas);
 
 	// set range data
-	void setRangeData(uint64_t time_usec, float data);
+	void setRangeData(int64_t time_usec, float data);
 
 	// set optical flow data
-	void setOpticalFlowData(uint64_t time_usec, flow_message *flow);
+	void setOpticalFlowData(int64_t time_usec, flow_message *flow);
 
 	// set external vision position and attitude data
-	void setExtVisionData(uint64_t time_usec, ext_vision_message *evdata);
+	void setExtVisionData(int64_t time_usec, ext_vision_message *evdata);
 
 	// set auxiliary velocity data
-	void setAuxVelData(uint64_t time_usec, float (&data)[2], float (&variance)[2]);
+	void setAuxVelData(int64_t time_usec, float (&data)[2], float (&variance)[2]);
 
 	// return a address to the parameters struct
 	// in order to give access to the application
@@ -305,7 +305,7 @@ public:
 			pos[i] = _output_new.pos(i) - pos_offset_earth(i);
 		}
 	}
-	void copy_timestamp(uint64_t *time_us)
+	void copy_timestamp(int64_t *time_us)
 	{
 		*time_us = _time_last_imu;
 	}
@@ -448,7 +448,7 @@ protected:
 	Vector3f _vel_imu_rel_body_ned;		// velocity of IMU relative to body origin in NED earth frame
 	Vector3f _vel_deriv_ned;		// velocity derivative at the IMU in NED earth frame (m/s/s)
 
-	uint64_t _imu_ticks{0};	// counter for imu updates
+	int64_t _imu_ticks{0};	// counter for imu updates
 
 	bool _imu_updated{false};      // true if the ekf should update (completed downsampling process)
 	bool _initialised{false};      // true if the ekf interface instance (data buffering) is initialized
@@ -483,7 +483,7 @@ protected:
 					// [1] high frequency vibraton level in the IMU delta angle data (rad)
 					// [2] high frequency vibration level in the IMU delta velocity data (m/s)
 	bool _vehicle_at_rest{false};	// true when the vehicle is at rest
-	uint64_t _time_last_move_detect_us{0};	// timestamp of last movement detection event in microseconds
+	int64_t _time_last_move_detect_us{0};	// timestamp of last movement detection event in microseconds
 
 	// data buffer instances
 	RingBuffer<imuSample> _imu_buffer;
@@ -510,21 +510,21 @@ protected:
 	bool _drag_buffer_fail{false};
 	bool _auxvel_buffer_fail{false};
 
-	uint64_t _time_last_imu{0};	// timestamp of last imu sample in microseconds
-	uint64_t _time_last_gps{0};	// timestamp of last gps measurement in microseconds
-	uint64_t _time_last_mag{0};	// timestamp of last magnetometer measurement in microseconds
-	uint64_t _time_last_baro{0};	// timestamp of last barometer measurement in microseconds
-	uint64_t _time_last_range{0};	// timestamp of last range measurement in microseconds
-	uint64_t _time_last_airspeed{0};	// timestamp of last airspeed measurement in microseconds
-	uint64_t _time_last_ext_vision{0}; // timestamp of last external vision measurement in microseconds
-	uint64_t _time_last_optflow{0};
-	uint64_t _time_last_gnd_effect_on{0};	//last time the baro ground effect compensation was turned on externally (uSec)
-	uint64_t _time_last_auxvel{0};
+	int64_t _time_last_imu{0};	// timestamp of last imu sample in microseconds
+	int64_t _time_last_gps{0};	// timestamp of last gps measurement in microseconds
+	int64_t _time_last_mag{0};	// timestamp of last magnetometer measurement in microseconds
+	int64_t _time_last_baro{0};	// timestamp of last barometer measurement in microseconds
+	int64_t _time_last_range{0};	// timestamp of last range measurement in microseconds
+	int64_t _time_last_airspeed{0};	// timestamp of last airspeed measurement in microseconds
+	int64_t _time_last_ext_vision{0}; // timestamp of last external vision measurement in microseconds
+	int64_t _time_last_optflow{0};
+	int64_t _time_last_gnd_effect_on{0};	//last time the baro ground effect compensation was turned on externally (uSec)
+	int64_t _time_last_auxvel{0};
 
 	fault_status_u _fault_status{};
 
 	// allocate data buffers and intialise interface variables
-	bool initialise_interface(uint64_t timestamp);
+	bool initialise_interface(int64_t timestamp);
 
 	// free buffer memory
 	void unallocate_buffers();

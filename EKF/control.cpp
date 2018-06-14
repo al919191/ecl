@@ -296,7 +296,7 @@ void Ekf::controlExternalVisionFusion()
 				// check if we have been deadreckoning too long
 				if (_time_last_imu - _time_last_pos_fuse > _params.no_gps_timeout_max) {
 					// don't reset velocity if we have another source of aiding constraining it
-					if (_time_last_imu - _time_last_of_fuse > (uint64_t)1E6) {
+					if (_time_last_imu - _time_last_of_fuse > (int64_t)1E6) {
 						resetVelocity();
 					}
 
@@ -326,8 +326,7 @@ void Ekf::controlExternalVisionFusion()
 		}
 
 	} else if (_control_status.flags.ev_pos
-		   && (_time_last_imu >= _time_last_ext_vision)
-		   && (_time_last_imu - _time_last_ext_vision > (uint64_t)_params.no_gps_timeout_max)) {
+		   && (_time_last_imu - _time_last_ext_vision > (int64_t)_params.no_gps_timeout_max)) {
 
 		// Turn off EV fusion mode if no data has been received
 		_control_status.flags.ev_pos = false;
@@ -377,14 +376,14 @@ void Ekf::controlOpticalFlowFusion()
 
 		if (!_inhibit_flow_use && _control_status.flags.opt_flow) {
 			// inhibit use of optical flow if motion is unsuitable and we are not reliant on it for flight navigation
-			bool preflight_motion_not_ok = !_control_status.flags.in_air && ((_imu_sample_delayed.time_us - _time_good_motion_us) > (uint64_t)1E5);
+			bool preflight_motion_not_ok = !_control_status.flags.in_air && ((_imu_sample_delayed.time_us - _time_good_motion_us) > (int64_t)1E5);
 			bool flight_motion_not_ok = _control_status.flags.in_air && !_range_aid_mode_enabled;
 			if ((preflight_motion_not_ok || flight_motion_not_ok) && !flow_required) {
 				_inhibit_flow_use = true;
 			}
 		} else if (_inhibit_flow_use && !_control_status.flags.opt_flow){
 			// allow use of optical flow if motion is suitable or we are reliant on it for flight navigation
-			bool preflight_motion_ok = !_control_status.flags.in_air && ((_imu_sample_delayed.time_us - _time_bad_motion_us) > (uint64_t)5E6);
+			bool preflight_motion_ok = !_control_status.flags.in_air && ((_imu_sample_delayed.time_us - _time_bad_motion_us) > (int64_t)5E6);
 			bool flight_motion_ok = _control_status.flags.in_air && _range_aid_mode_enabled;
 			if (preflight_motion_ok || flight_motion_ok || flow_required) {
 				_inhibit_flow_use = false;
@@ -398,7 +397,7 @@ void Ekf::controlOpticalFlowFusion()
 			       _control_status.flags.opt_flow = false;
 			       _time_last_of_fuse = 0;
 
-			} else if (_time_last_imu - _flow_sample_delayed.time_us > (uint64_t)_params.no_gps_timeout_max) {
+			} else if (_time_last_imu - _flow_sample_delayed.time_us > (int64_t)_params.no_gps_timeout_max) {
 				_control_status.flags.opt_flow = false;
 
 			}
@@ -456,7 +455,7 @@ void Ekf::controlOpticalFlowFusion()
 		}
 
 		// fuse the data if the terrain/distance to bottom is valid but use a more relaxed check to enable it to survive bad range finder data
-		if (_control_status.flags.opt_flow && (_time_last_imu - _time_last_hagl_fuse < (uint64_t)10e6)) {
+		if (_control_status.flags.opt_flow && (_time_last_imu - _time_last_hagl_fuse < (int64_t)10e6)) {
 			// Update optical flow bias estimates
 			calcOptFlowBias();
 
@@ -477,8 +476,8 @@ void Ekf::controlGpsFusion()
 
 		// Determine if we should use GPS aiding for velocity and horizontal position
 		// To start using GPS we need angular alignment completed, the local NED origin set and GPS data that has not failed checks recently
-		bool gps_checks_passing = (_time_last_imu - _last_gps_fail_us > (uint64_t)5e6);
-		bool gps_checks_failing = (_time_last_imu - _last_gps_pass_us > (uint64_t)5e6);
+		bool gps_checks_passing = (_time_last_imu - _last_gps_fail_us > (int64_t)5e6);
+		bool gps_checks_failing = (_time_last_imu - _last_gps_pass_us > (int64_t)5e6);
 		if ((_params.fusion_mode & MASK_USE_GPS) && !_control_status.flags.gps) {
 			if (_control_status.flags.tilt_align && _NED_origin_initialised && gps_checks_passing) {
 				// If the heading is not aligned, reset the yaw and magnetic field states
@@ -612,7 +611,7 @@ void Ekf::controlGpsFusion()
 			_hvelInnovGate = fmaxf(_params.vel_innov_gate, 1.0f);
 		}
 
-	} else if (_control_status.flags.gps && (_time_last_imu - _time_last_gps > (uint64_t)10e6)) {
+	} else if (_control_status.flags.gps && (_time_last_imu - _time_last_gps > (int64_t)10e6)) {
 		_control_status.flags.gps = false;
 		ECL_WARN("EKF GPS data stopped");
 	}
@@ -657,7 +656,7 @@ void Ekf::controlHeightSensorTimeouts()
 	bool continuous_bad_accel_hgt = ((_time_last_imu - _time_good_vert_accel) > (unsigned)_params.bad_acc_reset_delay_us);
 
 	// check if height has been inertial deadreckoning for too long
-	bool hgt_fusion_timeout = ((_time_last_imu - _time_last_hgt_fuse) > (uint64_t)5e6);
+	bool hgt_fusion_timeout = ((_time_last_imu - _time_last_hgt_fuse) > (int64_t)5e6);
 
 	// reset the vertical position and velocity states
 	if (hgt_fusion_timeout || continuous_bad_accel_hgt) {
@@ -1109,7 +1108,7 @@ void Ekf::rangeAidConditionsMet()
 
 void Ekf::checkForStuckRange()
 {
-	if (_range_data_ready && _range_sample_delayed.time_us - _time_last_rng_ready > (uint64_t)10e6 &&
+	if (_range_data_ready && _range_sample_delayed.time_us - _time_last_rng_ready > (int64_t)10e6 &&
 	    _control_status.flags.in_air) {
 
 		_control_status.flags.rng_stuck = true;
@@ -1143,8 +1142,8 @@ void Ekf::controlAirDataFusion()
 	// control activation and initialisation/reset of wind states required for airspeed fusion
 
 	// If both airspeed and sideslip fusion have timed out and we are not using a drag observation model then we no longer have valid wind estimates
-	bool airspeed_timed_out = _time_last_imu - _time_last_arsp_fuse > (uint64_t)10e6;
-	bool sideslip_timed_out = _time_last_imu - _time_last_beta_fuse > (uint64_t)10e6;
+	bool airspeed_timed_out = _time_last_imu - _time_last_arsp_fuse > (int64_t)10e6;
+	bool sideslip_timed_out = _time_last_imu - _time_last_beta_fuse > (int64_t)10e6;
 
 	if (_control_status.flags.wind && airspeed_timed_out && sideslip_timed_out && !(_params.fusion_mode & MASK_USE_DRAG)) {
 		_control_status.flags.wind = false;
@@ -1186,8 +1185,8 @@ void Ekf::controlBetaFusion()
 	// control activation and initialisation/reset of wind states required for synthetic sideslip fusion fusion
 
 	// If both airspeed and sideslip fusion have timed out and we are not using a drag observation model then we no longer have valid wind estimates
-	bool sideslip_timed_out = _time_last_imu - _time_last_beta_fuse > (uint64_t)10e6;
-	bool airspeed_timed_out = _time_last_imu - _time_last_arsp_fuse > (uint64_t)10e6;
+	bool sideslip_timed_out = _time_last_imu - _time_last_beta_fuse > (int64_t)10e6;
+	bool airspeed_timed_out = _time_last_imu - _time_last_arsp_fuse > (int64_t)10e6;
 
 	if (_control_status.flags.wind && airspeed_timed_out && sideslip_timed_out && !(_params.fusion_mode & MASK_USE_DRAG)) {
 		_control_status.flags.wind = false;
@@ -1368,7 +1367,7 @@ void Ekf::controlMagFusion()
 
 			// For the first 5 seconds after switching to 3-axis fusion we allow the magnetic field state estimates to stabilise
 			// before they are used to constrain heading drift
-			_flt_mag_align_converging = ((_imu_sample_delayed.time_us - _flt_mag_align_start_time) < (uint64_t)5e6);
+			_flt_mag_align_converging = ((_imu_sample_delayed.time_us - _flt_mag_align_start_time) < (int64_t)5e6);
 
 			if (!_control_status.flags.update_mag_states_only && _control_status_prev.flags.update_mag_states_only) {
 				// When re-commencing use of magnetometer to correct vehicle states
@@ -1466,9 +1465,9 @@ void Ekf::controlVelPosFusion()
 		_using_synthetic_position = true;
 
 		// Fuse synthetic position observations every 200msec
-		if ((_time_last_imu - _time_last_fake_gps > (uint64_t)2e5) || _fuse_height) {
+		if ((_time_last_imu - _time_last_fake_gps > (int64_t)2e5) || _fuse_height) {
 			// Reset position and velocity states if we re-commence this aiding method
-			if ((_time_last_imu - _time_last_fake_gps) > (uint64_t)4e5) {
+			if ((_time_last_imu - _time_last_fake_gps) > (int64_t)4e5) {
 				resetPosition();
 				resetVelocity();
 				_fuse_hpos_as_odom = false;

@@ -44,7 +44,7 @@
 #include <EKF/RingBuffer.h>
 
 struct sample {
-	uint64_t time_us;
+	int64_t time_us;
 	float data[3];
 };
 

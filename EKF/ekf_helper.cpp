@@ -961,9 +961,9 @@ void Ekf::get_covariances(float *covariances)
 
 // get the position and height of the ekf origin in WGS-84 coordinates and time the origin was set
 // return true if the origin is valid
-bool Ekf::get_ekf_origin(uint64_t *origin_time, map_projection_reference_s *origin_pos, float *origin_alt)
+bool Ekf::get_ekf_origin(int64_t *origin_time, map_projection_reference_s *origin_pos, float *origin_alt)
 {
-	memcpy(origin_time, &_last_gps_origin_time_us, sizeof(uint64_t));
+	memcpy(origin_time, &_last_gps_origin_time_us, sizeof(int64_t));
 	memcpy(origin_pos, &_pos_ref, sizeof(map_projection_reference_s));
 	memcpy(origin_alt, &_gps_alt_ref, sizeof(float));
 	return _NED_origin_initialised;
@@ -1102,7 +1102,7 @@ void Ekf::get_ekf_ctrl_limits(float *vxy_max, float *vz_max, float *hagl_min, fl
 
 bool Ekf::reset_imu_bias()
 {
-	if (_imu_sample_delayed.time_us - _last_imu_bias_cov_reset_us < (uint64_t)10e6) {
+	if (_imu_sample_delayed.time_us - _last_imu_bias_cov_reset_us < (int64_t)10e6) {
 		return false;
 
 	}

@@ -123,14 +123,14 @@ public:
 
 	uint8_t get_oldest_index() const { return _tail; }
 
-	bool pop_first_older_than(const uint64_t &timestamp, data_type *sample)
+	bool pop_first_older_than(const int64_t &timestamp, data_type *sample)
 	{
 		// start looking from newest observation data
 		for (uint8_t i = 0; i < _size; i++) {
 			int index = (_head - i);
 			index = index < 0 ? _size + index : index;
 
-			if (timestamp >= _buffer[index].time_us && timestamp - _buffer[index].time_us < (uint64_t)1e5) {
+			if (timestamp >= _buffer[index].time_us && timestamp - _buffer[index].time_us < (int64_t)1e5) {
 
 				*sample = _buffer[index];
 

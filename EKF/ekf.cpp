@@ -44,7 +44,7 @@
 #include <ecl.h>
 #include <mathlib/mathlib.h>
 
-bool Ekf::init(uint64_t timestamp)
+bool Ekf::init(int64_t timestamp)
 {
 	bool ret = initialise_interface(timestamp);
 	_state.vel.setZero();

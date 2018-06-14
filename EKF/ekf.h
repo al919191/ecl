@@ -50,7 +50,7 @@ public:
 	~Ekf() = default;
 
 	// initialise variables to sane values (also interface class)
-	bool init(uint64_t timestamp);
+	bool init(int64_t timestamp);
 
 	// should be called every time new data is pushed into the filter
 	bool update();
@@ -124,12 +124,12 @@ public:
 	void get_covariances(float *covariances);
 
 	// ask estimator for sensor data collection decision and do any preprocessing if required, returns true if not defined
-	bool collect_gps(uint64_t time_usec, struct gps_message *gps);
+	bool collect_gps(int64_t time_usec, struct gps_message *gps);
 	bool collect_imu(imuSample &imu);
 
 	// get the ekf WGS-84 origin position and height and the system time it was last set
 	// return true if the origin is valid
-	bool get_ekf_origin(uint64_t *origin_time, map_projection_reference_s *origin_pos, float *origin_alt);
+	bool get_ekf_origin(int64_t *origin_time, map_projection_reference_s *origin_pos, float *origin_alt);
 
 	// get the 1-sigma horizontal and vertical position uncertainty of the ekf WGS-84 position
 	void get_ekf_gpos_accuracy(float *ekf_eph, float *ekf_epv);
@@ -275,7 +275,7 @@ private:
 	bool _hpos_prev_available{false};	///< true when previous values of the estimate and measurement are available for use
 	Vector3f _ev_rot_vec_filt;		///< filtered rotation vector defining the rotation from EKF to EV reference (rad)
 	Dcmf _ev_rot_mat;			///< transformation matrix that rotates observations from the EV to the EKF navigation frame
-	uint64_t _ev_rot_last_time_us{0};	///< previous time that the calculation of the ekf to ev rotation matrix was updated (uSec)
+	int64_t _ev_rot_last_time_us{0};	///< previous time that the calculation of the ekf to ev rotation matrix was updated (uSec)
 
 	// booleans true when fresh sensor data is available at the fusion time horizon
 	bool _gps_data_ready{false};	///< true when new GPS data has fallen behind the fusion time horizon and is available to be fused
@@ -286,25 +286,25 @@ private:
 	bool _ev_data_ready{false};	///< true when new external vision system data has fallen behind the fusion time horizon and is available to be fused
 	bool _tas_data_ready{false};	///< true when new true airspeed data has fallen behind the fusion time horizon and is available to be fused
 
-	uint64_t _time_last_fake_gps{0};	///< last time we faked GPS position measurements to constrain tilt errors during operation without external aiding (uSec)
-	uint64_t _time_ins_deadreckon_start{0};	///< amount of time we have been doing inertial only deadreckoning (uSec)
+	int64_t _time_last_fake_gps{0};	///< last time we faked GPS position measurements to constrain tilt errors during operation without external aiding (uSec)
+	int64_t _time_ins_deadreckon_start{0};	///< amount of time we have been doing inertial only deadreckoning (uSec)
 	bool _using_synthetic_position{false};	///< true if we are using a synthetic position to constrain drift
 
-	uint64_t _time_last_pos_fuse{0};	///< time the last fusion of horizontal position measurements was performed (uSec)
-	uint64_t _time_last_delpos_fuse{0};	///< time the last fusion of incremental horizontal position measurements was performed (uSec)
-	uint64_t _time_last_vel_fuse{0};	///< time the last fusion of velocity measurements was performed (uSec)
-	uint64_t _time_last_hgt_fuse{0};	///< time the last fusion of height measurements was performed (uSec)
-	uint64_t _time_last_of_fuse{0};		///< time the last fusion of optical flow measurements were performed (uSec)
-	uint64_t _time_last_arsp_fuse{0};	///< time the last fusion of airspeed measurements were performed (uSec)
-	uint64_t _time_last_beta_fuse{0};	///< time the last fusion of synthetic sideslip measurements were performed (uSec)
-	uint64_t _time_last_rng_ready{0};	///< time the last range finder measurement was ready (uSec)
+	int64_t _time_last_pos_fuse{0};	///< time the last fusion of horizontal position measurements was performed (uSec)
+	int64_t _time_last_delpos_fuse{0};	///< time the last fusion of incremental horizontal position measurements was performed (uSec)
+	int64_t _time_last_vel_fuse{0};	///< time the last fusion of velocity measurements was performed (uSec)
+	int64_t _time_last_hgt_fuse{0};	///< time the last fusion of height measurements was performed (uSec)
+	int64_t _time_last_of_fuse{0};		///< time the last fusion of optical flow measurements were performed (uSec)
+	int64_t _time_last_arsp_fuse{0};	///< time the last fusion of airspeed measurements were performed (uSec)
+	int64_t _time_last_beta_fuse{0};	///< time the last fusion of synthetic sideslip measurements were performed (uSec)
+	int64_t _time_last_rng_ready{0};	///< time the last range finder measurement was ready (uSec)
 	Vector2f _last_known_posNE;		///< last known local NE position vector (m)
 	float _imu_collection_time_adj{0.0f};	///< the amount of time the IMU collection needs to be advanced to meet the target set by FILTER_UPDATE_PERIOD_MS (sec)
 
-	uint64_t _time_acc_bias_check{0};	///< last time the  accel bias check passed (uSec)
-	uint64_t _delta_time_baro_us{0};	///< delta time between two consecutive delayed baro samples from the buffer (uSec)
+	int64_t _time_acc_bias_check{0};	///< last time the  accel bias check passed (uSec)
+	int64_t _delta_time_baro_us{0};	///< delta time between two consecutive delayed baro samples from the buffer (uSec)
 
-	uint64_t _last_imu_bias_cov_reset_us{0};	///< time the last reset of IMU delta angle and velocity state covariances was performed (uSec)
+	int64_t _last_imu_bias_cov_reset_us{0};	///< time the last reset of IMU delta angle and velocity state covariances was performed (uSec)
 
 	Vector3f _earth_rate_NED;	///< earth rotation vector (NED) in rad/s
 
@@ -316,9 +316,9 @@ private:
 	float _yaw_rate_lpf_ef{0.0f};		///< Filtered angular rate about earth frame D axis (rad/sec)
 	bool _mag_bias_observable{false};	///< true when there is enough rotation to make magnetometer bias errors observable
 	bool _yaw_angle_observable{false};	///< true when there is enough horizontal acceleration to make yaw observable
-	uint64_t _time_yaw_started{0};		///< last system time in usec that a yaw rotation moaneouvre was detected
+	int64_t _time_yaw_started{0};		///< last system time in usec that a yaw rotation moaneouvre was detected
 	uint8_t _num_bad_flight_yaw_events{0};	///< number of times a bad heading has been detected in flight and required a yaw reset
-	uint64_t _mag_use_not_inhibit_us{0};	///< last system time in usec before magnetomer use was inhibited
+	int64_t _mag_use_not_inhibit_us{0};	///< last system time in usec before magnetomer use was inhibited
 	bool _mag_use_inhibit{false};		///< true when magnetomer use is being inhibited
 	bool _mag_use_inhibit_prev{false};	///< true when magnetomer use was being inhibited the previous frame
 	bool _mag_inhibit_yaw_reset_req{false};	///< true when magnetomer inhibit has been active for long enough to require a yaw reset when conditons improve.
@@ -352,8 +352,8 @@ private:
 	Vector3f _flow_gyro_bias;	///< bias errors in optical flow sensor rate gyro outputs (rad/sec)
 	Vector3f _imu_del_ang_of;	///< bias corrected delta angle measurements accumulated across the same time frame as the optical flow rates (rad)
 	float _delta_time_of{0.0f};	///< time in sec that _imu_del_ang_of was accumulated over (sec)
-	uint64_t _time_bad_motion_us{0};	///< last system time that on-ground motion exceeded limits (uSec)
-	uint64_t _time_good_motion_us{0};	///< last system time that on-ground motion was within limits (uSec)
+	int64_t _time_bad_motion_us{0};	///< last system time that on-ground motion exceeded limits (uSec)
+	int64_t _time_good_motion_us{0};	///< last system time that on-ground motion was within limits (uSec)
 	bool _inhibit_flow_use{false};	///< true when use of optical flow and range finder is being inhibited
 
 	float _mag_declination{0.0f};	///< magnetic declination used by reset and fusion functions (rad)
@@ -373,12 +373,12 @@ private:
 	float _gps_velD_diff_filt{0.0f};	///< GPS filtered Down velocity (m/sec)
 	float _gps_velN_filt{0.0f};		///< GPS filtered North velocity (m/sec)
 	float _gps_velE_filt{0.0f};		///< GPS filtered East velocity (m/sec)
-	uint64_t _last_gps_fail_us{0};		///< last system time in usec that the GPS failed it's checks
-	uint64_t _last_gps_pass_us{0};		///< last system time in usec that the GPS passed it's checks
+	int64_t _last_gps_fail_us{0};		///< last system time in usec that the GPS failed it's checks
+	int64_t _last_gps_pass_us{0};		///< last system time in usec that the GPS passed it's checks
 	float _gps_error_norm{1.0f};		///< normalised gps error
 
 	// Variables used to publish the WGS-84 location of the EKF local NED origin
-	uint64_t _last_gps_origin_time_us{0};	///< time the origin was last set (uSec)
+	int64_t _last_gps_origin_time_us{0};	///< time the origin was last set (uSec)
 	float _gps_alt_ref{0.0f};		///< WGS-84 height (m)
 
 	// Variables used to initialise the filter states
@@ -386,7 +386,7 @@ private:
 	float _rng_filt_state{0.0f};		///< filtered height measurement (m)
 	uint32_t _mag_counter{0};		///< number of magnetometer samples read during initialisation
 	uint32_t _ev_counter{0};		///< number of external vision samples read during initialisation
-	uint64_t _time_last_mag{0};		///< measurement time of last magnetomter sample (uSec)
+	int64_t _time_last_mag{0};		///< measurement time of last magnetomter sample (uSec)
 	Vector3f _mag_filt_state;		///< filtered magnetometer measurement (Gauss)
 	Vector3f _delVel_sum;			///< summed delta velocity (m/sec)
 	float _hgt_sensor_offset{0.0f};		///< set as necessary if desired to maintain the same height after a height reset (m)
@@ -396,8 +396,8 @@ private:
 	float _last_on_ground_posD{0.0f};	///< last vertical position when the in_air status was false (m)
 	bool _flt_mag_align_complete{false};	///< true when the in-flight mag field alignment has been completed
 	bool _flt_mag_align_converging{false};	///< true when the in-flight mag field post alignment convergence is being performd
-	uint64_t _flt_mag_align_start_time{0};	///< time that inflight magnetic field alignment started (uSec)
-	uint64_t _time_last_movement{0};	///< last system time that sufficient movement to use 3-axis magnetometer fusion was detected (uSec)
+	int64_t _flt_mag_align_start_time{0};	///< time that inflight magnetic field alignment started (uSec)
+	int64_t _time_last_movement{0};	///< last system time that sufficient movement to use 3-axis magnetometer fusion was detected (uSec)
 	float _saved_mag_variance[6] {};	///< magnetic field state variances that have been saved for use at the next initialisation (Gauss**2)
 	bool _velpos_reset_request{false};	///< true when a large yaw error has been fixed and a velocity and position state reset is required
 
@@ -415,7 +415,7 @@ private:
 	float _terrain_var{1e4f};		///< variance of terrain position estimate (m**2)
 	float _hagl_innov{0.0f};		///< innovation of the last height above terrain measurement (m)
 	float _hagl_innov_var{0.0f};		///< innovation variance for the last height above terrain measurement (m**2)
-	uint64_t _time_last_hagl_fuse{0};		///< last system time that the hagl measurement failed it's checks (uSec)
+	int64_t _time_last_hagl_fuse{0};		///< last system time that the hagl measurement failed it's checks (uSec)
 	bool _terrain_initialised{false};	///< true when the terrain estimator has been intialised
 	float _sin_tilt_rng{0.0f};		///< sine of the range finder tilt rotation about the Y body axis
 	float _cos_tilt_rng{0.0f};		///< cosine of the range finder tilt rotation about the Y body axis
@@ -431,8 +431,8 @@ private:
 	int _primary_hgt_source{VDIST_SENSOR_BARO};	///< specifies primary source of height data
 
 	// imu fault status
-	uint64_t _time_bad_vert_accel{0};	///< last time a bad vertical accel was detected (uSec)
-	uint64_t _time_good_vert_accel{0};	///< last time a good vertical accel was detected (uSec)
+	int64_t _time_bad_vert_accel{0};	///< last time a bad vertical accel was detected (uSec)
+	int64_t _time_good_vert_accel{0};	///< last time a good vertical accel was detected (uSec)
 	bool _bad_vert_accel_detected{false};	///< true when bad vertical accelerometer data has been detected
 
 	// variables used to control range aid functionality

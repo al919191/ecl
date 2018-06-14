@@ -54,7 +54,7 @@ using matrix::Vector3f;
 using matrix::wrap_pi;
 
 struct gps_message {
-	uint64_t time_usec;
+	int64_t time_usec;
 	int32_t lat;		///< Latitude in 1E-7 degrees
 	int32_t lon;		///< Longitude in 1E-7 degrees
 	int32_t alt;		///< Altitude in 1E-3 meters (millimeters) above MSL
@@ -87,14 +87,14 @@ struct outputSample {
 	Quatf  quat_nominal;	///< nominal quaternion describing vehicle attitude
 	Vector3f    vel;	///< NED velocity estimate in earth frame (m/sec)
 	Vector3f    pos;	///< NED position estimate in earth frame (m/sec)
-	uint64_t    time_us;	///< timestamp of the measurement (uSec)
+	int64_t    time_us;	///< timestamp of the measurement (uSec)
 };
 
 struct outputVert {
 	float	    vel_d;		///< D velocity calculated using alternative algorithm (m/sec)
 	float	    vel_d_integ;	///< Integral of vel_d (m)
 	float	    dt;			///< delta time (sec)
-	uint64_t    time_us;		///< timestamp of the measurement (uSec)
+	int64_t    time_us;		///< timestamp of the measurement (uSec)
 };
 
 struct imuSample {
@@ -102,7 +102,7 @@ struct imuSample {
 	Vector3f    delta_vel;		///< delta velocity in body frame (integrated accelerometer measurements) (m/sec)
 	float       delta_ang_dt;	///< delta angle integration period (sec)
 	float       delta_vel_dt;	///< delta velocity integration period (sec)
-	uint64_t    time_us;		///< timestamp of the measurement (uSec)
+	int64_t    time_us;		///< timestamp of the measurement (uSec)
 };
 
 struct gpsSample {
@@ -112,28 +112,28 @@ struct gpsSample {
 	float	    hacc;	///< 1-std horizontal position error (m)
 	float	    vacc;	///< 1-std vertical position error (m)
 	float       sacc;	///< 1-std speed error (m/sec)
-	uint64_t    time_us;	///< timestamp of the measurement (uSec)
+	int64_t    time_us;	///< timestamp of the measurement (uSec)
 };
 
 struct magSample {
 	Vector3f    mag;	///< NED magnetometer body frame measurements (Gauss)
-	uint64_t    time_us;	///< timestamp of the measurement (uSec)
+	int64_t    time_us;	///< timestamp of the measurement (uSec)
 };
 
 struct baroSample {
 	float       hgt{0.0f};	///< pressure altitude above sea level (m)
-	uint64_t    time_us{0};	///< timestamp of the measurement (uSec)
+	int64_t    time_us{0};	///< timestamp of the measurement (uSec)
 };
 
 struct rangeSample {
 	float       rng;	///< range (distance to ground) measurement (m)
-	uint64_t    time_us;	///< timestamp of the measurement (uSec)
+	int64_t    time_us;	///< timestamp of the measurement (uSec)
 };
 
 struct airspeedSample {
 	float       true_airspeed;	///< true airspeed measurement (m/sec)
 	float 		eas2tas;	///< equivalent to true airspeed factor
-	uint64_t    time_us;		///< timestamp of the measurement (uSec)
+	int64_t    time_us;		///< timestamp of the measurement (uSec)
 };
 
 struct flowSample {
@@ -142,7 +142,7 @@ struct flowSample {
 	Vector2f flowRadXYcomp;	///< measured delta angle of the image about the X and Y body axes after removal of body rotation (rad), RH rotation is positive
 	Vector3f gyroXYZ;	///< measured delta angle of the inertial frame about the body axes obtained from rate gyro measurements (rad), RH rotation is positive
 	float    dt;		///< amount of integration time (sec)
-	uint64_t time_us;	///< timestamp of the integration period mid-point (uSec)
+	int64_t time_us;	///< timestamp of the integration period mid-point (uSec)
 };
 
 struct extVisionSample {
@@ -150,18 +150,18 @@ struct extVisionSample {
 	Quatf quat;		///< measured quaternion orientation defining rotation from NED to body frame
 	float posErr;		///< 1-Sigma spherical position accuracy (m)
 	float angErr;		///< 1-Sigma angular error (rad)
-	uint64_t time_us;	///< timestamp of the measurement (uSec)
+	int64_t time_us;	///< timestamp of the measurement (uSec)
 };
 
 struct dragSample {
 	Vector2f accelXY;	///< measured specific force along the X and Y body axes (m/sec**2)
-	uint64_t time_us;	///< timestamp of the measurement (uSec)
+	int64_t time_us;	///< timestamp of the measurement (uSec)
 };
 
 struct auxVelSample {
 	Vector2f velNE;		///< measured NE velocity relative to the local origin (m/sec)
 	Vector2f velVarNE;	///< estimated error variance of the NE velocity (m/sec)**2
-	uint64_t time_us;	///< timestamp of the measurement (uSec)
+	int64_t time_us;	///< timestamp of the measurement (uSec)
 };
 
 // Integer definitions for vdist_sensor_type
@@ -192,13 +192,13 @@ struct auxVelSample {
 #define MAG_FUSE_TYPE_INDOOR    4	///< The same as option 0, but magnetomer or yaw fusion will not be used unless earth frame external aiding (GPS or External Vision) is being used. This prevents inconsistent magnetic fields associated with indoor operation degrading state estimates.
 
 // Maximum sensor intervals in usec
-#define GPS_MAX_INTERVAL  (uint64_t)5e5	///< Maximum allowable time interval between GPS measurements (uSec)
-#define BARO_MAX_INTERVAL (uint64_t)2e5	///< Maximum allowable time interval between pressure altitude measurements (uSec)
-#define RNG_MAX_INTERVAL  (uint64_t)2e5	///< Maximum allowable time interval between range finder  measurements (uSec)
-#define EV_MAX_INTERVAL   (uint64_t)2e5	///< Maximum allowable time interval between external vision system measurements (uSec)
+#define GPS_MAX_INTERVAL  (int64_t)5e5	///< Maximum allowable time interval between GPS measurements (uSec)
+#define BARO_MAX_INTERVAL (int64_t)2e5	///< Maximum allowable time interval between pressure altitude measurements (uSec)
+#define RNG_MAX_INTERVAL  (int64_t)2e5	///< Maximum allowable time interval between range finder  measurements (uSec)
+#define EV_MAX_INTERVAL   (int64_t)2e5	///< Maximum allowable time interval between external vision system measurements (uSec)
 
 // bad accelerometer detection and mitigation
-#define BADACC_PROBATION  (uint64_t)10e6	///< Period of time that accel data declared bad must continuously pass checks to be declared good again (uSec)
+#define BADACC_PROBATION  (int64_t)10e6	///< Period of time that accel data declared bad must continuously pass checks to be declared good again (uSec)
 #define BADACC_BIAS_PNOISE	4.9f	///< The delta velocity process noise is set to this when accel data is declared bad (m/sec**2)
 
 // ground effect compensation
